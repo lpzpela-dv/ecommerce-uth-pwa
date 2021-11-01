@@ -36,7 +36,7 @@ self.addEventListener('fetch', event => {
         const cachedResponse = await cache.match(event.request);
 
         if (cachedResponse) {
-            console.log('info encontrada en cache ' + event.request.url);
+            console.log('info encontrada en cache! ' + event.request.url);
             return cachedResponse;
         }
         var fetchRequest = event.request.clone();
