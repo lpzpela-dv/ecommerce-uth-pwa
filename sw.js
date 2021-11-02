@@ -1,4 +1,5 @@
-const cacheName = 'shell-content';
+const cacheStaticName = 'shell-static-content-v2';
+const cacheDinamicName = 'shell-Dinamic-content-v1';
 const fileToCache = [
     '/',
     'index.html',
@@ -20,7 +21,7 @@ const fileToCache = [
 self.addEventListener('install', event => {
     console.log("Se instaló el Service Worker");
     event.waitUntil(
-        caches.open(cacheName).then(function (cache) {
+        caches.open(cacheStaticName).then(function (cache) {
             console.log("Caching app shell");
             return cache.addAll(fileToCache);
         }));
@@ -28,27 +29,33 @@ self.addEventListener('install', event => {
 
 self.addEventListener('activate', event => {
     console.log("Se activó el SW");
+    event.waitUntil(
+        caches.keys()
+            .then(function (keyList) {
+                return Promise.all(keyList.map(function (key) {
+                    if (key !== cacheStaticName && key !== cacheDinamicName) {
+                        console.log('Eliminando old cache.', key);
+                        return caches.delete(key);
+                    }
+                }));
+            })
+    );
 });
 
 self.addEventListener('fetch', event => {
-    event.respondWith(async function () {
-        const cache = await caches.open(cacheName);
-        const cachedResponse = await cache.match(event.request);
-
-        if (cachedResponse) {
-            console.log('info encontrada en cache! ' + event.request.url);
-            return cachedResponse;
-        }
-        var fetchRequest = event.request.clone();
-        return fetch(fetchRequest).then(
-            function (response) {
-                var responseToCache = response.clone();
-                caches.open(cacheName).then(function (cache) {
-                    cache.put(event.request, responseToCache);
-                });
-                console.log("info no encontrada: " + event.request.url);
-                return response;
-            }
-        );
-    }());
+    event.respondWith(
+        // Intentando obtener el recurso de la red
+        fetch(event.request)
+            .then(function (res) {
+                return caches.open(cacheStaticName)
+                    .then(function (cache) {
+                        // si la solicitud es exitosa la actualizo de la cache
+                        cache.put(event.request, res.clone());
+                        return res;
+                    })
+            }).catch(function (err) {
+            // si no responde la red respondo desde la cache
+            return caches.match(event.request);
+        })
+    );
 });
