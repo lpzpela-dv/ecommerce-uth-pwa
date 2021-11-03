@@ -1,5 +1,5 @@
-const cacheStaticName = 'shell-static-content-v2';
-const cacheDinamicName = 'shell-Dinamic-content-v1';
+const cacheStaticName = 'shell-static-content-v6';
+const cacheDinamicName = 'shell-Dinamic-content-v6';
 const fileToCache = [
     '/',
     'index.html',
@@ -7,9 +7,6 @@ const fileToCache = [
     'css/bootstrap.min.css',
     'js/bootstrap.bundle.min.js',
     'js/ecommerce.js',
-    'img/Products/canon.PNG',
-    'img/Products/sony.PNG',
-    'img/Products/canon2.PNG',
     'https://code.jquery.com/jquery-3.6.0.min.js',
     'https://kit.fontawesome.com/87f8d9e4cd.js',
     'https://ka-f.fontawesome.com/releases/v5.15.4/webfonts/free-fa-solid-900.woff2',
@@ -47,7 +44,7 @@ self.addEventListener('fetch', event => {
         // Intentando obtener el recurso de la red
         fetch(event.request)
             .then(function (res) {
-                return caches.open(cacheStaticName)
+                return caches.open(cacheDinamicName)
                     .then(function (cache) {
                         // si la solicitud es exitosa la actualizo de la cache
                         cache.put(event.request, res.clone());
