@@ -1,5 +1,5 @@
-const cacheStaticName = 'shell-static-content-v6';
-const cacheDinamicName = 'shell-Dinamic-content-v6';
+const cacheStaticName = 'shell-static-content-v7';
+const cacheDinamicName = 'shell-Dinamic-content-v7';
 const fileToCache = [
     '/',
     'index.html',
