@@ -1,11 +1,9 @@
-var contC = 0
-var cantF = 0
-function addToCar(event){
-    contC = contC + 1
-    $("#cantCar").text(contC)
-}
+$(document).ready(function (){
+    Notification.requestPermission().then(function(result) {
+        console.log(result);
+    });
 
-function addToFav(event){
-    cantF = cantF + 1
-    $("#cantFav").text(cantF)
-}
+    $("#login").on("click",function () {
+        window.location.href="http://localhost:8080/ecommerce-uth-pwa/login.html";
+    });
+});

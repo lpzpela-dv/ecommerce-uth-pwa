@@ -1,4 +1,5 @@
-const cacheName = 'shell-content';
+const cacheStaticName = 'shell-static-content-v7';
+const cacheDinamicName = 'shell-Dinamic-content-v7';
 const fileToCache = [
     '/',
     'index.html',
@@ -6,9 +7,6 @@ const fileToCache = [
     'css/bootstrap.min.css',
     'js/bootstrap.bundle.min.js',
     'js/ecommerce.js',
-    'img/Products/canon.PNG',
-    'img/Products/sony.PNG',
-    'img/Products/canon2.PNG',
     'https://code.jquery.com/jquery-3.6.0.min.js',
     'https://kit.fontawesome.com/87f8d9e4cd.js',
     'https://ka-f.fontawesome.com/releases/v5.15.4/webfonts/free-fa-solid-900.woff2',
@@ -20,7 +18,7 @@ const fileToCache = [
 self.addEventListener('install', event => {
     console.log("Se instaló el Service Worker");
     event.waitUntil(
-        caches.open(cacheName).then(function (cache) {
+        caches.open(cacheStaticName).then(function (cache) {
             console.log("Caching app shell");
             return cache.addAll(fileToCache);
         }));
@@ -28,27 +26,33 @@ self.addEventListener('install', event => {
 
 self.addEventListener('activate', event => {
     console.log("Se activó el SW");
+    event.waitUntil(
+        caches.keys()
+            .then(function (keyList) {
+                return Promise.all(keyList.map(function (key) {
+                    if (key !== cacheStaticName && key !== cacheDinamicName) {
+                        console.log('Eliminando old cache.', key);
+                        return caches.delete(key);
+                    }
+                }));
+            })
+    );
 });
 
 self.addEventListener('fetch', event => {
-    event.respondWith(async function () {
-        const cache = await caches.open(cacheName);
-        const cachedResponse = await cache.match(event.request);
-
-        if (cachedResponse) {
-            console.log('info encontrada en cache ' + event.request.url);
-            return cachedResponse;
-        }
-        var fetchRequest = event.request.clone();
-        return fetch(fetchRequest).then(
-            function (response) {
-                var responseToCache = response.clone();
-                caches.open(cacheName).then(function (cache) {
-                    cache.put(event.request, responseToCache);
-                });
-                console.log("info no encontrada: " + event.request.url);
-                return response;
-            }
-        );
-    }());
+    event.respondWith(
+        // Intentando obtener el recurso de la red
+        fetch(event.request)
+            .then(function (res) {
+                return caches.open(cacheDinamicName)
+                    .then(function (cache) {
+                        // si la solicitud es exitosa la actualizo de la cache
+                        cache.put(event.request, res.clone());
+                        return res;
+                    })
+            }).catch(function (err) {
+            // si no responde la red respondo desde la cache
+            return caches.match(event.request);
+        })
+    );
 });
